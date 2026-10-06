@@ -832,6 +832,7 @@ export default function App() {
   // Solo se puede pedir por programas una combinación que exista en algún contrato (Libre siempre es válida)
   const contractKeys = new Set(CONTRACTS.map(c => progKey(c.programas)))
   const progValid = (name: string) => name === 'Libre' || contractKeys.has(progKey(name))
+  const hasAvail = (c: ContractRow, d: DayInfo) => blocked(c, d) && (parseInt(pedidos[c.rowId]?.[d.key] || '0') || 0) > 0
   const blocked = (c: ContractRow, d: DayInfo) => mode === 'solicitar' && solicitarTipo === 'contrato' && blockedBy(c, d) !== null
   const isOver = (c: ContractRow, dayKey: string) => (parseInt(activeMap[c.rowId]?.[dayKey] || '0') || 0) > 0 && rowTotal(c.rowId) > limitOf(c)
   const progTotal = (dayKey: string) => Object.values(programInputs[dayKey] || {}).reduce((t, v) => t + (parseInt(v) || 0), 0)
@@ -1272,20 +1273,21 @@ export default function App() {
                             <td
                               className="px-2 py-1.5 border-r relative group focus-within:z-20 hover:z-20"
                               style={{ background:rowBg, borderColor:'#dde8ee' }}
-                              title={blocked(c, d) ? `No se puede solicitar: hay cupos disponibles en ${blockedBy(c, d)} para este día. Usá Generar cupos.` : undefined}
                             >
                               <input
                                 type="number" min={0}
-                                value={blocked(c, d) ? '' : (pedidos[c.rowId]?.[d.key] || '')}
+                                value={pedidos[c.rowId]?.[d.key] || ''}
                                 onChange={e => updateInput('pedido', c.rowId, d.key, e.target.value)}
-                                disabled={solicitarTipo === 'nominar' || blocked(c, d)}
+                                disabled={solicitarTipo === 'nominar'}
                                 className="w-16 text-right text-xs rounded-md border px-2 py-0.5"
-                                style={solicitarTipo === 'nominar' || blocked(c, d)
+                                style={solicitarTipo === 'nominar'
                                   ? { borderColor:'#e1e7ea', outline:'none', background:'#f3f5f6', color:'#aab4b9', cursor:'not-allowed' }
-                                  : { borderColor: isOver(c, d.key) ? '#c0392b' : '#c0d8e4', color: isOver(c, d.key) ? '#c0392b' : undefined, outline:'none', background:'#fff' }}
+                                  : { borderColor: (isOver(c, d.key) || hasAvail(c, d)) ? '#c0392b' : '#c0d8e4', color: (isOver(c, d.key) || hasAvail(c, d)) ? '#c0392b' : undefined, outline:'none', background:'#fff' }}
                                 placeholder="0"
                               />
-                              {isOver(c, d.key) && <OverTip text={`El valor ingresado supera lo pendiente por cupear del contrato (quedan ${limitOf(c)}).`} />}
+                              {isOver(c, d.key)
+                                ? <OverTip text={`El valor ingresado supera lo pendiente por cupear del contrato (quedan ${limitOf(c)}).`} />
+                                : hasAvail(c, d) && <OverTip text={`No se puede solicitar: hay cupos disponibles en ${blockedBy(c, d)} para este día. Usá Generar cupos.`} />}
                             </td>
                           </Fragment>
                         ) : (
