@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+}
+
+.matrix-wrap {
+  overflow-x: auto;
+  position: relative;
+}
+
+.matrix-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.sticky-col {
+  position: sticky;
+  z-index: 2;
+  background: #fff;
+}
+
+.sticky-col-head {
+  position: sticky;
+  z-index: 3;
+}
+
+.day-col-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* scrollbar */
+* { scrollbar-width: thin; scrollbar-color: #b8d4e0 transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: #b8d4e0; border-radius: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* radio: activo = azul con punto, inactivo = gris clarito */
+.mildc-radio {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid #c3ccd1;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.mildc-radio:checked {
+  border-color: #007CAA;
+  background: radial-gradient(circle, #007CAA 0 42%, #fff 46%);
+}
+.mildc-radio:disabled { border-color: #dde3e6; cursor: not-allowed; }
+.mildc-radio:disabled:checked { border-color: #b9d3df; background: radial-gradient(circle, #b9d3df 0 42%, #fff 46%); }
+.mildc-radio:focus-visible { outline: 2px solid #007CAA; outline-offset: 2px; }
+input:disabled::placeholder{color:#c5cdd1}
+
+/* flechas de los inputs numéricos: 4px de separación respecto del número */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  margin-left: 4px;
+}
