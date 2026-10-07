@@ -1108,7 +1108,7 @@ export default function App() {
                             </div>
                           </td>
                           <td className="text-center py-2 px-3 border-r text-xs font-medium whitespace-nowrap" style={{ background: subBg, color: TD, borderColor:'#b8d8e8' }}>En gestión</td>
-                          <td className="text-center py-2 px-3 border-r text-xs font-medium" style={{ background: subBg, color: TD, borderColor:'#b8d8e8' }}>Pedidos</td>
+                          <td className="text-center py-2 px-3 border-r text-xs font-medium" style={{ background: subBg, color: TD, borderColor:'#b8d8e8' }}>Solicitar</td>
                         </Fragment>
                       ) : (
                         <Fragment key={d.key}>
@@ -1242,7 +1242,7 @@ export default function App() {
                         <Fragment key={d.key}>
                           <th className="text-center px-3 py-2.5 font-semibold text-white border-r text-xs" style={{ background: hbg, borderColor:'#0a4d63' }}>Generado</th>
                           <th className="text-center px-3 py-2.5 font-semibold text-white border-r text-xs" style={{ background: hbg, borderColor:'#0a4d63' }}>En gestión</th>
-                          <th className="text-center px-3 py-2.5 font-semibold text-white border-r text-xs" style={{ background: hbg, borderColor:'#0a4d63' }}>Pedidos</th>
+                          <th className="text-center px-3 py-2.5 font-semibold text-white border-r text-xs" style={{ background: hbg, borderColor:'#0a4d63' }}>Solicitar</th>
                         </Fragment>
                       ) : (
                         <Fragment key={d.key}>
