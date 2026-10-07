@@ -1177,10 +1177,10 @@ export default function App() {
                   {/* Program availability rows */}
                   {Array.from({ length: progMaxLen }).map((_, pi) => (
                     <tr key={`prog-${pi}`}>
-                      <td className="sticky-col" style={{ left:L0, background:BG, borderBottom:'1px solid #b8d0de' }}></td>
-                      <td className="sticky-col" style={{ left:L1, background:BG, borderBottom:'1px solid #b8d0de' }}></td>
-                      <td className="sticky-col" style={{ left:L2, background:BG, borderBottom:'1px solid #b8d0de' }}></td>
-                      <td className="sticky-col" style={{ left:L3, background:BG, borderBottom:'1px solid #b8d0de', boxShadow:'2px 0 4px rgba(0,0,0,0.08)' }}></td>
+                      <td className="sticky-col" style={{ left:L0, background:BG }}></td>
+                      <td className="sticky-col" style={{ left:L1, background:BG }}></td>
+                      <td className="sticky-col" style={{ left:L2, background:BG }}></td>
+                      <td className="sticky-col" style={{ left:L3, background:BG, boxShadow:'2px 0 4px rgba(0,0,0,0.08)' }}></td>
                       {visibleDays.map((d, di) => {
                         const prog = dayProgs(d)[pi]
                         const cb = colBg(di) ?? '#fff'
