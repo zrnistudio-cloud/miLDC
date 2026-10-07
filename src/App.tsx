@@ -42,6 +42,9 @@ const CONTRACTS: ContractRow[] = [
   { rowId:'r8', contractId:'001CP029019778', programas:'2BSvs;EPA', porCupear:20, cliente:'Coop3', gen:{d1:5,d2:4,d3:0,d4:4,d5:0,d6:0,d7:0,d8:3,d9:2,d10:0} },
   { rowId:'r9', contractId:'001CP029019777', programas:'CFR', porCupear:20, cliente:'Coop3', gen:{d1:5,d2:5,d3:3,d4:2,d5:0,d6:0,d7:0,d8:3,d9:0,d10:0} },
   { rowId:'r10', contractId:'001CP029019776', programas:'CFR', porCupear:20, cliente:'Coop3', gen:{d1:4,d2:2,d3:3,d4:2,d5:0,d6:0,d7:0,d8:4,d9:0,d10:2} },
+  { rowId:'r11', contractId:'001CP029019775', programas:'ISCC EU', porCupear:40, cliente:'Coop3', gen:{d1:6,d2:4,d3:0,d4:5,d5:0,d6:0,d7:3,d8:2,d9:0,d10:4} },
+  { rowId:'r12', contractId:'001CP029019774', programas:'RTRS', porCupear:30, cliente:'Coop3', gen:{d1:3,d2:5,d3:0,d4:2,d5:0,d6:0,d7:0,d8:3,d9:0,d10:2} },
+  { rowId:'r13', contractId:'001CP029019773', programas:'ProTerra', porCupear:25, cliente:'Coop3', gen:{d1:0,d2:4,d3:2,d4:0,d5:0,d6:0,d7:3,d8:0,d9:3,d10:0} },
 ]
 
 type Mode = 'generar' | 'solicitar'
@@ -204,7 +207,20 @@ function TopBar({ breadcrumb }: { breadcrumb: string[] }) {
 
 // ─── Programs modal (design4) ────────────────────────────────────────────────
 
-const ALL_PROGRAMS = ['Libre','EUDR','2BSvs','CDR;RTS','EPA']
+const PROGRAM_CATALOG: { name: string; desc: string }[] = [
+  { name:'Libre',      desc:'Sin programa de sustentabilidad asociado' },
+  { name:'EUDR',       desc:'Libre de deforestación (Reglamento UE)' },
+  { name:'2BSvs',      desc:'Esquema voluntario 2BS para biocombustibles (UE)' },
+  { name:'ISCC EU',    desc:'Certificación de sustentabilidad y trazabilidad (UE)' },
+  { name:'ISCC PLUS',  desc:'Cadenas de suministro sustentables fuera de RED' },
+  { name:'RTRS',       desc:'Mesa Redonda de Soja Responsable' },
+  { name:'ProTerra',   desc:'Certificación social y ambiental, non-GMO' },
+  { name:'CFR',        desc:'Clean Fuel Regulations (Canadá)' },
+  { name:'2BSvs;EPA',  desc:'Combinación 2BSvs + EPA' },
+  { name:'EPA',        desc:'Renewable Fuel Standard (EE.UU.)' },
+  { name:'CDR;RTS',    desc:'Combinación CDR + RTS' },
+]
+const ALL_PROGRAMS = PROGRAM_CATALOG.map(x => x.name)
 const MAX_PEDIDO = 400
 
 interface ProgModalProps {
@@ -232,17 +248,17 @@ function ProgramsModal({ dayLabel, baseNames, extraNames, values: initValues, is
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background:'rgba(0,0,0,0.25)' }}>
       <div className="rounded-2xl shadow-2xl p-6 w-[480px] max-w-[94vw]" style={{ background: TL }}>
-        <h2 className="text-lg font-bold" style={{ color: TD }}>Solicitar cupos por programa</h2>
+        <h2 className="text-lg font-bold" style={{ color: TD }}>Solicitar cupos por códigos</h2>
         <p className="text-xs font-medium mt-0.5 mb-3" style={{ color:'#5a7a8a' }}>{dayLabel}</p>
-        <p className="text-sm mb-4" style={{ color:'#1a3a4a' }}>Elegí los programas y cargá la cantidad que querés solicitar.</p>
+        <p className="text-sm mb-4" style={{ color:'#1a3a4a' }}>Tildá los que necesitás y cargá la cantidad de cupos.</p>
 
         <div className="flex items-center gap-3 px-3 pb-1.5 text-xs font-medium" style={{ color:'#5a7a8a' }}>
           <span className="w-5 flex-shrink-0" />
-          <span className="flex-1">Programa</span>
-          <span className="w-24 text-center">Pedido</span>
+          <span className="flex-1">Código</span>
+          <span className="w-24 text-center">Cupos</span>
         </div>
         <div className="rounded-xl bg-white mb-5 divide-y divide-gray-100 overflow-y-auto" style={{ maxHeight: 7 * 52 }}>
-          {ALL_PROGRAMS.map(p => {
+          {PROGRAM_CATALOG.map(({ name: p, desc }) => {
             const locked = baseNames.includes(p)
             const on = isOn(p)
             const valid = isValid(p)
@@ -260,7 +276,10 @@ function ProgramsModal({ dayLabel, baseNames, extraNames, values: initValues, is
                     )}
                   </span>
                   <input type="checkbox" className="sr-only" checked={on} disabled={locked || !valid} onChange={() => toggle(p)} />
-                  <span className="text-sm truncate" style={{ color: on && valid ? '#1a1a1a' : '#8a959b' }}>{p}</span>
+                  <span className="min-w-0 flex flex-col leading-tight">
+                    <span className="text-sm truncate" style={{ color: on && valid ? '#1a1a1a' : '#8a959b' }}>{p}</span>
+                    <span className="text-[11px] truncate" style={{ color:'#8a959b' }}>{desc}</span>
+                  </span>
                   {!valid && <span className="text-xs flex-shrink-0" style={{ color:'#8a959b' }}>Sin contrato</span>}
                 </label>
                 <input
@@ -599,11 +618,11 @@ function OverTip({ text = 'El valor ingresado supera la cantidad por cupear del 
   )
 }
 
-function ConfirmModal({ onCancel, onAccept }: { onCancel: () => void; onAccept: () => void }) {
+function ConfirmModal({ text, onCancel, onAccept }: { text: string; onCancel: () => void; onAccept: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background:'rgba(0,0,0,0.3)' }}>
       <div className="rounded-2xl shadow-2xl p-6" style={{ width: 480, background: TL }}>
-        <p className="text-lg font-bold mb-6" style={{ color: TD }}>¿Confirma que deseas enviar pedido para los cupos asignados?</p>
+        <p className="text-lg font-bold mb-6" style={{ color: TD }}>{text}</p>
         <div className="flex justify-end gap-3">
           <button onClick={onCancel} className="px-5 py-2 rounded-xl border text-sm font-semibold" style={{ borderColor: T, color: T, background:'#fff' }}>Cancelar</button>
           <button onClick={onAccept} className="px-5 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: T }}>Aceptar</button>
@@ -726,6 +745,9 @@ export default function App() {
   const [pedidos,      setPedidos]      = useState<Record<string,Record<string,string>>>({})
   const [nominaciones, setNominaciones] = useState<Record<string,Record<string,string>>>({})
   const [programInputs, setProgramInputs] = useState<Record<string,Record<string,string>>>({})
+  // Lo nominado al confirmar en Generar cupos se descuenta de Por cupear
+  const [consumed, setConsumed] = useState<Record<string,number>>({})
+  const pcOf = (c: ContractRow) => Math.max(0, c.porCupear - (consumed[c.rowId] || 0))
   const [genAdds, setGenAdds] = useState<Record<string,Record<string,number>>>({})
   // Efecto de "Solicitar pedido": lo pedido pasa a En gestión y descuenta Disponibles
   const [gestionC, setGestionC] = useState<Record<string,Record<string,number>>>({ r3:{ d5:5 }, r5:{ d6:10 } })
@@ -819,7 +841,7 @@ export default function App() {
   // Pendiente por cupear real: en Solicitar se descuenta lo ya pedido (En gestión) y lo aprobado
   const committed = (c: ContractRow) =>
     Object.values(gestionC[c.rowId] || {}).reduce((t, v) => t + v, 0) + Object.values(aprobC[c.rowId] || {}).reduce((t, v) => t + v, 0)
-  const limitOf = (c: ContractRow) => mode === 'solicitar' ? Math.max(0, c.porCupear - committed(c)) : c.porCupear
+  const limitOf = (c: ContractRow) => mode === 'solicitar' ? Math.max(0, pcOf(c) - committed(c)) : pcOf(c)
   // Un contrato no puede pedir si ese día hay disponible en Libre o en su combinación de programas
   const progKey = (name: string) => name.split(';').map(x => x.trim().toUpperCase().replace(/VS$/, '')).sort().join(';')
   const blockedBy = (c: ContractRow, d: DayInfo): string | null => {
@@ -851,7 +873,7 @@ export default function App() {
 
   function submitOrder() {
     setConfirmOpen(false)
-    const stale = ALL_DAYS.some(d => CONTRACTS.reduce((s, c) => s + (parseInt(activeMap[c.rowId]?.[d.key] || '0') || 0), 0) > dispDay(d))
+    const stale = mode === 'solicitar' && ALL_DAYS.some(d => CONTRACTS.reduce((s, c) => s + (parseInt(activeMap[c.rowId]?.[d.key] || '0') || 0), 0) > dispDay(d))
     if (stale) {
       setAlert({ kind:'error', title:'No hemos podido realizar la operación', text:'La disponibilidad de cupos ha sido modificada. Actualizá la búsqueda para consultar los nuevos valores.' })
       return
@@ -868,6 +890,11 @@ export default function App() {
           })
           next[c.rowId] = row
         })
+        return next
+      })
+      setConsumed(prev => {
+        const next = { ...prev }
+        CONTRACTS.forEach(c => { next[c.rowId] = (next[c.rowId] || 0) + rowTotal(c.rowId) })
         return next
       })
       setNominaciones({})
@@ -1258,7 +1285,7 @@ export default function App() {
                     <tr key={c.rowId} style={{ borderBottom:'1px solid #dde8ee' }}>
                       <td className="sticky-col px-3 py-2 border-r text-gray-800" style={{ left:L0, background: ci%2===0?'#fff':'#f4fafd', fontSize:11, borderColor:'#dde8ee', whiteSpace:'nowrap', overflow:'hidden' }}>{c.contractId}</td>
                       <td className="sticky-col px-3 py-2 border-r text-gray-600" style={{ left:L1, background: ci%2===0?'#fff':'#f4fafd', fontSize:11, borderColor:'#dde8ee', whiteSpace:'nowrap', overflow:'hidden' }}>{c.programas}</td>
-                      <td className="sticky-col px-3 py-2 border-r text-gray-700 text-right" style={{ left:L2, background: ci%2===0?'#fff':'#f4fafd', fontSize:11, borderColor:'#dde8ee', whiteSpace:'nowrap', overflow:'hidden' }}>{c.porCupear}</td>
+                      <td className="sticky-col px-3 py-2 border-r text-gray-700 text-right" style={{ left:L2, background: ci%2===0?'#fff':'#f4fafd', fontSize:11, borderColor:'#dde8ee', whiteSpace:'nowrap', overflow:'hidden' }}>{pcOf(c)}</td>
                       <td className="sticky-col px-3 py-2 border-r text-gray-600" style={{ left:L3, background: ci%2===0?'#fff':'#f4fafd', fontSize:11, borderColor:'#dde8ee', whiteSpace:'nowrap', overflow:'hidden', boxShadow:'2px 0 4px rgba(0,0,0,0.08)' }}>{c.cliente}</td>
                       {visibleDays.map((d, di) => {
                         const gen = getGen(c, d.key)
@@ -1297,13 +1324,12 @@ export default function App() {
                               <input
                                 type="number" min={0}
                                 value={nominaciones[c.rowId]?.[d.key] || ''}
-                                onChange={e => updateInput('nominar', c.rowId, d.key, e.target.value !== '' && (parseInt(e.target.value) || 0) > gen ? String(gen) : e.target.value)}
-                                max={gen}
+                                onChange={e => updateInput('nominar', c.rowId, d.key, e.target.value)}
                                 className="w-16 text-center text-xs rounded-md border px-2 py-0.5"
                                 style={{ borderColor: isOver(c, d.key) ? '#c0392b' : '#c0d8e4', color: isOver(c, d.key) ? '#c0392b' : undefined, outline:'none', background:'#fff' }}
                                 placeholder="0"
                               />
-                              {isOver(c, d.key) && <OverTip />}
+                              {isOver(c, d.key) && <OverTip text={`No podés nominar más del disponible por cupear del contrato (quedan ${pcOf(c)}).`} />}
                             </td>
                           </Fragment>
                         )
@@ -1315,7 +1341,7 @@ export default function App() {
                   <tr key="total-row" style={{ borderTop:'2px solid #8ab8cc' }}>
                     <td className="sticky-col px-3 py-2.5 font-bold border-r text-gray-900" style={{ left:L0, background:TL, borderColor:'#b8d8e8' }}>TOTAL</td>
                     <td className="sticky-col px-3 py-2.5 border-r" style={{ left:L1, background:TL, borderColor:'#b8d8e8' }}></td>
-                    <td className="sticky-col px-3 py-2.5 font-bold text-right border-r text-gray-900" style={{ left:L2, background:TL, borderColor:'#b8d8e8' }}>{CONTRACTS.reduce((s,c)=>s+c.porCupear,0)}</td>
+                    <td className="sticky-col px-3 py-2.5 font-bold text-right border-r text-gray-900" style={{ left:L2, background:TL, borderColor:'#b8d8e8' }}>{CONTRACTS.reduce((s,c)=>s+pcOf(c),0)}</td>
                     <td className="sticky-col px-3 py-2.5 border-r" style={{ left:L3, background:TL, borderColor:'#b8d8e8', boxShadow:'2px 0 4px rgba(0,0,0,0.08)' }}></td>
                     {visibleDays.map((d, di) => {
                       const totBg = colBg(di) ?? TL
@@ -1363,7 +1389,7 @@ export default function App() {
                   className="px-5 py-2 rounded-xl text-sm font-semibold text-white disabled:cursor-not-allowed"
                   style={{ background: searched && !hasErrors && hasValues ? TD : '#c9ced1' }}
                 >
-                  {mode === 'generar' ? 'Generar pedido' : 'Solicitar pedido'}
+                  {mode === 'generar' ? 'Generar códigos' : 'Enviar solicitud'}
                 </button>
               </div>
             </div>
@@ -1371,7 +1397,7 @@ export default function App() {
         </div>
       </div>
 
-      {confirmOpen && <ConfirmModal onCancel={() => setConfirmOpen(false)} onAccept={submitOrder} />}
+      {confirmOpen && <ConfirmModal text={mode === 'generar' ? '¿Confirmás generar los códigos para los cupos nominados?' : '¿Confirmás enviar la solicitud de cupos?'} onCancel={() => setConfirmOpen(false)} onAccept={submitOrder} />}
       {alert && <AlertBanner alert={alert} onClose={() => setAlert(null)} />}
       {devolverOpen && (() => {
         const names: string[] = []
