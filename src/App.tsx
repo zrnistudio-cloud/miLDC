@@ -332,7 +332,7 @@ function InfoTip({ text, open, onToggle, onClose }: { text: string; open: boolea
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9.5" /><path d="M12 11v5.5" /><circle cx="12" cy="7.6" r="0.6" fill="currentColor" /></svg>
       </button>
       {open && (
-        <div role="tooltip" className="absolute left-1/2 z-40 rounded-lg shadow-lg text-xs leading-snug px-3 py-2" style={{ top:'calc(100% + 8px)', transform:'translateX(-50%)', width:260, background: TD, color:'#fff' }}>
+        <div role="tooltip" className="absolute left-1/2 z-40 rounded-lg shadow-lg text-xs leading-snug px-3 py-2" style={{ top:'calc(100% + 8px)', transform:'translateX(-50%)', width:260, background: TD, color:'#fff', fontWeight:400 }}>
           <span className="absolute -top-1 left-1/2 w-2 h-2 rotate-45" style={{ background: TD, marginLeft:-4 }} />
           {text}
         </div>
