@@ -229,11 +229,12 @@ interface ProgModalProps {
   extraNames: string[]
   values: Record<string,string>
   isValid: (name: string) => boolean
+  hasContract: (name: string) => boolean
   onConfirm: (extras: string[], values: Record<string,string>) => void
   onClose: () => void
 }
 
-function ProgramsModal({ dayLabel, baseNames, extraNames, values: initValues, isValid, onConfirm, onClose }: ProgModalProps) {
+function ProgramsModal({ dayLabel, baseNames, extraNames, values: initValues, isValid, hasContract, onConfirm, onClose }: ProgModalProps) {
   const [extras, setExtras] = useState<string[]>(extraNames)
   const [values, setValues] = useState<Record<string,string>>(initValues)
   const toggle = (p: string) => {
@@ -252,12 +253,7 @@ function ProgramsModal({ dayLabel, baseNames, extraNames, values: initValues, is
         <p className="text-xs font-medium mt-0.5 mb-3" style={{ color:'#5a7a8a' }}>{dayLabel}</p>
         <p className="text-sm mb-4" style={{ color:'#1a3a4a' }}>Tildá los que necesitás y cargá la cantidad de cupos.</p>
 
-        <div className="flex items-center gap-3 px-3 pb-1.5 text-xs font-medium" style={{ color:'#5a7a8a' }}>
-          <span className="w-5 flex-shrink-0" />
-          <span className="flex-1">Código</span>
-          <span className="w-24 text-center">Cupos</span>
-        </div>
-        <div className="rounded-xl bg-white mb-5 divide-y divide-gray-100 overflow-y-auto" style={{ maxHeight: 7 * 52 }}>
+        <div className="mildc-scroll rounded-xl bg-white mb-5 divide-y divide-gray-100 overflow-y-scroll" style={{ maxHeight: 6 * 52 }}>
           {PROGRAM_CATALOG.map(({ name: p, desc }) => {
             const locked = baseNames.includes(p)
             const on = isOn(p)
@@ -280,7 +276,7 @@ function ProgramsModal({ dayLabel, baseNames, extraNames, values: initValues, is
                     <span className="text-sm truncate" style={{ color: on && valid ? '#1a1a1a' : '#8a959b' }}>{p}</span>
                     <span className="text-[11px] truncate" style={{ color:'#8a959b' }}>{desc}</span>
                   </span>
-                  {!valid && <span className="text-xs flex-shrink-0" style={{ color:'#8a959b' }}>Sin contrato</span>}
+                  {!hasContract(p) && <span className="text-[11px] flex-shrink-0 rounded-full px-2 py-0.5" style={{ color:'#5a7a8a', background:'#eef3f5' }}>Sin contrato</span>}
                 </label>
                 <input
                   type="number" min={0} max={MAX_PEDIDO}
@@ -852,7 +848,9 @@ export default function App() {
   }
   // Solo se puede pedir por programas una combinación que exista en algún contrato (Libre siempre es válida)
   const contractKeys = new Set(CONTRACTS.map(c => progKey(c.programas)))
-  const progValid = (name: string) => name === 'Libre' || contractKeys.has(progKey(name))
+  const hasContractFor = (name: string) => name === 'Libre' || contractKeys.has(progKey(name))
+  // Se permite cargar programas sin contrato (sujeto al máximo de 400 por día)
+  const progValid = (_name: string) => true
   const hasAvail = (c: ContractRow, d: DayInfo) => blocked(c, d) && (parseInt(pedidos[c.rowId]?.[d.key] || '0') || 0) > 0
   const blocked = (c: ContractRow, d: DayInfo) => mode === 'solicitar' && solicitarTipo === 'contrato' && blockedBy(c, d) !== null
   const isOver = (c: ContractRow, dayKey: string) => (parseInt(activeMap[c.rowId]?.[dayKey] || '0') || 0) > 0 && (mode === 'solicitar' ? dayOverC(dayKey) : rowTotal(c.rowId) > limitOf(c))
@@ -1436,6 +1434,7 @@ export default function App() {
             extraNames={extraProgs[day.key] || []}
             values={programInputs[day.key] || {}}
             isValid={progValid}
+            hasContract={hasContractFor}
             onConfirm={(extras, values) => {
               setExtraProgs(prev => ({ ...prev, [day.key]: extras }))
               const clean: Record<string,string> = {}
