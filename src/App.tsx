@@ -318,6 +318,29 @@ function ProgramsModal({ dayLabel, baseNames, extraNames, values: initValues, is
   )
 }
 
+function InfoTip({ text, open, onToggle, onClose }: { text: string; open: boolean; onToggle: () => void; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose() }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [open, onClose])
+  return (
+    <div ref={ref} className="relative flex items-center">
+      <button type="button" onClick={onToggle} aria-label="Más información" aria-expanded={open} className="flex items-center justify-center rounded-full" style={{ color: open ? TD : T }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9.5" /><path d="M12 11v5.5" /><circle cx="12" cy="7.6" r="0.6" fill="currentColor" /></svg>
+      </button>
+      {open && (
+        <div role="tooltip" className="absolute left-1/2 z-40 rounded-lg shadow-lg text-xs leading-snug px-3 py-2" style={{ top:'calc(100% + 8px)', transform:'translateX(-50%)', width:260, background: TD, color:'#fff' }}>
+          <span className="absolute -top-1 left-1/2 w-2 h-2 rotate-45" style={{ background: TD, marginLeft:-4 }} />
+          {text}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function PendingCell({ n, onClick }: { n: number; onClick: () => void }) {
   if (n <= 0) return <>0</>
   return (
@@ -744,6 +767,7 @@ export default function App() {
   // Lo nominado al confirmar en Generar cupos se descuenta de Por cupear
   const [consumed, setConsumed] = useState<Record<string,number>>({})
   const pcOf = (c: ContractRow) => Math.max(0, c.porCupear - (consumed[c.rowId] || 0))
+  const [infoOpen, setInfoOpen] = useState<'contrato'|'nominar'|null>(null)
   const [genAdds, setGenAdds] = useState<Record<string,Record<string,number>>>({})
   // Efecto de "Solicitar pedido": lo pedido pasa a En gestión y descuenta Disponibles
   const [gestionC, setGestionC] = useState<Record<string,Record<string,number>>>({ r3:{ d5:5 }, r5:{ d6:10 } })
@@ -1079,17 +1103,23 @@ export default function App() {
                       </div>
                       {mode === 'solicitar' ? (
                         <div className="flex items-center gap-6 mt-3">
-                          {([['contrato','Por contrato'],['nominar','Por programas']] as const).map(([val,label]) => (
-                            <label key={val} className="flex items-center gap-2 cursor-pointer text-sm" style={{ color:'#1a3a4a' }}>
-                              <input
-                                type="radio"
-                                name="solicitar-tipo"
-                                checked={solicitarTipo === val}
-                                onChange={() => { setSolicitarTipo(val); if (val === 'contrato') setProgramInputs({}); else setPedidos({}) }}
-                                className="mildc-radio"
-                              />
-                              {label}
-                            </label>
+                          {([
+                            ['contrato','Por contrato','Solicite cupos asociados a un contrato. Una vez aprobada la solicitud, el cupo se genera automáticamente.'],
+                            ['nominar','Por cantidad','Solicite una cantidad sin asociarla a un contrato. Una vez aprobada la solicitud, quedará disponible para que pueda nominarla posteriormente.'],
+                          ] as const).map(([val,label,info]) => (
+                            <div key={val} className="relative flex items-center gap-1.5">
+                              <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color:'#1a3a4a' }}>
+                                <input
+                                  type="radio"
+                                  name="solicitar-tipo"
+                                  checked={solicitarTipo === val}
+                                  onChange={() => { setSolicitarTipo(val); if (val === 'contrato') setProgramInputs({}); else setPedidos({}) }}
+                                  className="mildc-radio"
+                                />
+                                {label}
+                              </label>
+                              <InfoTip text={info} open={infoOpen === val} onToggle={() => setInfoOpen(infoOpen === val ? null : val)} onClose={() => setInfoOpen(null)} />
+                            </div>
                           ))}
                         </div>
                       ) : (
@@ -1221,7 +1251,7 @@ export default function App() {
                             <button
                               onClick={() => setProgModal({ dayKey: d.key })}
                               disabled={solicitarTipo === 'contrato'}
-                              title={solicitarTipo === 'contrato' ? 'Elegí "Por programas" para agregar programas.' : undefined}
+                              title={solicitarTipo === 'contrato' ? 'Elegí "Por cantidad" para agregar programas.' : undefined}
                               className="text-xl font-bold leading-none disabled:cursor-not-allowed"
                               style={{ color: solicitarTipo === 'contrato' ? '#b9cdd6' : T }}
                             >+</button>
