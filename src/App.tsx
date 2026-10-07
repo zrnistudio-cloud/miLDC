@@ -838,10 +838,9 @@ export default function App() {
 
   const activeMap = mode === 'solicitar' ? pedidos : nominaciones
   const rowTotal = (rowId: string) => Object.values(activeMap[rowId] || {}).reduce((s, v) => s + (parseInt(v) || 0), 0)
-  // Pendiente por cupear real: en Solicitar se descuenta lo ya pedido (En gestión) y lo aprobado
-  const committed = (c: ContractRow) =>
-    Object.values(gestionC[c.rowId] || {}).reduce((t, v) => t + v, 0) + Object.values(aprobC[c.rowId] || {}).reduce((t, v) => t + v, 0)
-  const limitOf = (c: ContractRow) => mode === 'solicitar' ? Math.max(0, pcOf(c) - committed(c)) : pcOf(c)
+  // Generar: hasta lo que queda por cupear. Solicitar: hasta MAX_PEDIDO por día (aunque no quede por cupear), sujeto a aprobación
+  const limitOf = (c: ContractRow) => pcOf(c)
+  const dayOverC = (dayKey: string) => mode === 'solicitar' && solicitarTipo === 'contrato' && getColTotal('pedido', dayKey) > MAX_PEDIDO
   // Un contrato no puede pedir si ese día hay disponible en Libre o en su combinación de programas
   const progKey = (name: string) => name.split(';').map(x => x.trim().toUpperCase().replace(/VS$/, '')).sort().join(';')
   const blockedBy = (c: ContractRow, d: DayInfo): string | null => {
@@ -856,9 +855,9 @@ export default function App() {
   const progValid = (name: string) => name === 'Libre' || contractKeys.has(progKey(name))
   const hasAvail = (c: ContractRow, d: DayInfo) => blocked(c, d) && (parseInt(pedidos[c.rowId]?.[d.key] || '0') || 0) > 0
   const blocked = (c: ContractRow, d: DayInfo) => mode === 'solicitar' && solicitarTipo === 'contrato' && blockedBy(c, d) !== null
-  const isOver = (c: ContractRow, dayKey: string) => (parseInt(activeMap[c.rowId]?.[dayKey] || '0') || 0) > 0 && rowTotal(c.rowId) > limitOf(c)
+  const isOver = (c: ContractRow, dayKey: string) => (parseInt(activeMap[c.rowId]?.[dayKey] || '0') || 0) > 0 && (mode === 'solicitar' ? dayOverC(dayKey) : rowTotal(c.rowId) > limitOf(c))
   const progTotal = (dayKey: string) => Object.values(programInputs[dayKey] || {}).reduce((t, v) => t + (parseInt(v) || 0), 0)
-  const hasErrors = CONTRACTS.some(c => rowTotal(c.rowId) > limitOf(c)) ||
+  const hasErrors = (mode === 'generar' && CONTRACTS.some(c => rowTotal(c.rowId) > limitOf(c))) || ALL_DAYS.some(d => dayOverC(d.key)) ||
     (mode === 'solicitar' && solicitarTipo === 'contrato' && CONTRACTS.some(c => ALL_DAYS.some(d => (parseInt(pedidos[c.rowId]?.[d.key] || '0') || 0) > 0 && blockedBy(c, d) !== null))) || (mode === 'solicitar' && solicitarTipo === 'nominar' && ALL_DAYS.some(d => progTotal(d.key) > MAX_PEDIDO))
   const hasProgValues = mode === 'solicitar' && solicitarTipo === 'nominar' && ALL_DAYS.some(d => progTotal(d.key) > 0)
   const hasValues = hasProgValues || CONTRACTS.some(c => rowTotal(c.rowId) > 0)
@@ -873,11 +872,6 @@ export default function App() {
 
   function submitOrder() {
     setConfirmOpen(false)
-    const stale = mode === 'solicitar' && ALL_DAYS.some(d => CONTRACTS.reduce((s, c) => s + (parseInt(activeMap[c.rowId]?.[d.key] || '0') || 0), 0) > dispDay(d))
-    if (stale) {
-      setAlert({ kind:'error', title:'No hemos podido realizar la operación', text:'La disponibilidad de cupos ha sido modificada. Actualizá la búsqueda para consultar los nuevos valores.' })
-      return
-    }
     if (mode === 'generar') {
       // Lo nominado se descuenta de Generado y la pantalla se mantiene con la misma búsqueda
       setGenAdds(prev => {
@@ -1313,7 +1307,7 @@ export default function App() {
                                 placeholder="0"
                               />
                               {isOver(c, d.key)
-                                ? <OverTip text={`El valor ingresado supera lo pendiente por cupear del contrato (quedan ${limitOf(c)}).`} />
+                                ? <OverTip text={`Podés solicitar hasta ${MAX_PEDIDO} cupos por día. Sujeto a aprobación.`} />
                                 : hasAvail(c, d) && <OverTip text={`No se puede solicitar: hay cupos disponibles en ${blockedBy(c, d)} para este día. Usá Generar cupos.`} />}
                             </td>
                           </Fragment>
