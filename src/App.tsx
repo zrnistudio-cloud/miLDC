@@ -1108,7 +1108,7 @@ export default function App() {
                             ['nominar','Por cantidad','Solicite una cantidad sin asociarla a un contrato. Una vez aprobada la solicitud, quedará disponible para que pueda nominarla posteriormente.'],
                           ] as const).map(([val,label,info]) => (
                             <div key={val} className="relative flex items-center gap-1.5">
-                              <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color:'#1a3a4a' }}>
+                              <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color:'#1a3a4a', fontWeight:400 }}>
                                 <input
                                   type="radio"
                                   name="solicitar-tipo"
