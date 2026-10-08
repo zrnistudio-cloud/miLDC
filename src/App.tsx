@@ -963,7 +963,7 @@ export default function App() {
   // Fix sub-column width so exactly 4.5 day-groups are visible; rest scrolls
   const DAYS_VISIBLE = mode === 'solicitar' ? 3 : 4.5
   const baseSubColW = Math.max(60, (containerWidth - stickyW) / (DAYS_VISIBLE * subCols))
-  const fillSubColW = visibleDays.length > 0 ? (containerWidth - stickyW) / (visibleDays.length * subCols) : baseSubColW
+  const fillSubColW = visibleDays.length > 0 ? (containerWidth - stickyW) / (Math.max(3, visibleDays.length) * subCols) : baseSubColW
   const DISP_W = 112
   const subColW = mode === 'solicitar'
     ? Math.max(88, ((containerWidth - stickyW) / 3 - DISP_W) / 2)
