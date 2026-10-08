@@ -871,6 +871,15 @@ export default function App() {
     const combo = progs.find(pr => pr.name !== 'Libre' && pr.disp > 0 && progKey(pr.name) === progKey(c.programas))
     return combo ? combo.name : null
   }
+  // Mismo criterio en Por cantidad: no se puede pedir un código si ese día hay disponible en Libre o en el mismo código
+  const progBlockedBy = (d: DayInfo, name: string): string | null => {
+    const progs = dayProgs(d).map(pr => ({ name: pr.name, disp: dispProg(d, pr.name, pr.disp) }))
+    if (progs.some(pr => pr.name === 'Libre' && pr.disp > 0)) return 'Libre'
+    const same = progs.find(pr => pr.name !== 'Libre' && pr.disp > 0 && progKey(pr.name) === progKey(name))
+    return same ? same.name : null
+  }
+  const progHasAvail = (d: DayInfo, name: string) =>
+    mode === 'solicitar' && solicitarTipo === 'nominar' && (parseInt(programInputs[d.key]?.[name] || '0') || 0) > 0 && progBlockedBy(d, name) !== null
   // Solo se puede pedir por programas una combinación que exista en algún contrato (Libre siempre es válida)
   const contractKeys = new Set(CONTRACTS.map(c => progKey(c.programas)))
   const hasContractFor = (name: string) => name === 'Libre' || contractKeys.has(progKey(name))
@@ -880,7 +889,7 @@ export default function App() {
   const isOver = (c: ContractRow, dayKey: string) => (parseInt(activeMap[c.rowId]?.[dayKey] || '0') || 0) > 0 && rowTotal(c.rowId) > limitOf(c)
   const progTotal = (dayKey: string) => Object.values(programInputs[dayKey] || {}).reduce((t, v) => t + (parseInt(v) || 0), 0)
   const hasErrors = CONTRACTS.some(c => rowTotal(c.rowId) > limitOf(c)) ||
-    (mode === 'solicitar' && solicitarTipo === 'contrato' && CONTRACTS.some(c => ALL_DAYS.some(d => (parseInt(pedidos[c.rowId]?.[d.key] || '0') || 0) > 0 && blockedBy(c, d) !== null))) || (mode === 'solicitar' && solicitarTipo === 'nominar' && ALL_DAYS.some(d => progTotal(d.key) > MAX_PEDIDO))
+    (mode === 'solicitar' && solicitarTipo === 'contrato' && CONTRACTS.some(c => ALL_DAYS.some(d => (parseInt(pedidos[c.rowId]?.[d.key] || '0') || 0) > 0 && blockedBy(c, d) !== null))) || (mode === 'solicitar' && solicitarTipo === 'nominar' && ALL_DAYS.some(d => progTotal(d.key) > MAX_PEDIDO || dayProgs(d).some(pr => progHasAvail(d, pr.name))))
   const hasProgValues = mode === 'solicitar' && solicitarTipo === 'nominar' && ALL_DAYS.some(d => progTotal(d.key) > 0)
   const hasValues = hasProgValues || CONTRACTS.some(c => rowTotal(c.rowId) > 0)
 
@@ -1200,7 +1209,7 @@ export default function App() {
                               <td className="px-3 py-1.5 border-r text-center text-gray-500" style={{ background:cb, borderColor:'#dde8ee' }}>
                                 <PendingCell n={getGestionP(d.key, prog.name)} onClick={() => setResolveT({ kind:'P', dayKey:d.key, id:prog.name, title:`${prog.name} · ${d.label}`, pending:getGestionP(d.key, prog.name) })} />
                               </td>
-                              <td className="px-2 py-1 border-r" style={{ background:cb, borderColor:'#dde8ee' }}>
+                              <td className="px-2 py-1 border-r relative group focus-within:z-20 hover:z-20" style={{ background:cb, borderColor:'#dde8ee' }}>
                                 <input
                                   type="number" min={0}
                                   value={progValid(prog.name) ? (programInputs[d.key]?.[prog.name] || '') : ''}
@@ -1210,9 +1219,12 @@ export default function App() {
                                   className="w-16 text-right text-xs rounded-md border px-2 py-0.5"
                                   style={solicitarTipo === 'contrato' || !progValid(prog.name)
                                     ? { borderColor:'#e1e7ea', outline:'none', background:'#f3f5f6', color:'#aab4b9', cursor:'not-allowed' }
-                                    : { borderColor: progTotal(d.key) > MAX_PEDIDO ? '#c0392b' : '#c0d8e4', color: progTotal(d.key) > MAX_PEDIDO ? '#c0392b' : undefined, outline:'none', background:'#fff' }}
+                                    : { borderColor: (progTotal(d.key) > MAX_PEDIDO || progHasAvail(d, prog.name)) ? '#c0392b' : '#c0d8e4', color: (progTotal(d.key) > MAX_PEDIDO || progHasAvail(d, prog.name)) ? '#c0392b' : undefined, outline:'none', background:'#fff' }}
                                   placeholder="0"
                                 />
+                                {progHasAvail(d, prog.name)
+                                  ? <OverTip text={`No se puede solicitar: hay cupos disponibles en ${progBlockedBy(d, prog.name)} para este día. Usá Generar cupos.`} />
+                                  : progTotal(d.key) > MAX_PEDIDO && (parseInt(programInputs[d.key]?.[prog.name] || '0') || 0) > 0 && <OverTip text={`Sin contrato podés solicitar hasta ${MAX_PEDIDO} cupos por día.`} />}
                               </td>
                             </Fragment>
                           ) : (
