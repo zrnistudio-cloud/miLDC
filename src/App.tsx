@@ -1403,7 +1403,10 @@ export default function App() {
                     <p className="mt-1">Los cupos disponibles <strong>libres</strong> se pueden utilizar para cualquier combinación de programa sustentable, excepto los limitados.</p>
                   </>
                 ) : (
-                  <p>Se mostrarán y se podrán gestionar únicamente los contratos abiertos hasta un período de entrega de 30 días.</p>
+                  <>
+                    <p>Se mostrarán y se podrán gestionar únicamente los contratos abiertos hasta un período de entrega de 30 días.</p>
+                    <p className="mt-1">Los cupos disponibles <strong>libres</strong> se pueden utilizar para cualquier combinación de programa sustentable, excepto los limitados.</p>
+                  </>
                 )}
               </div>
               <div className="flex gap-3 flex-shrink-0">
