@@ -1146,7 +1146,7 @@ export default function App() {
                         key={d.key}
                         colSpan={mode==='solicitar' ? 3 : 2}
                         className={`font-bold text-white px-3 border-r ${mode === 'solicitar' ? 'text-left py-1.5' : 'text-center py-2.5'}`}
-                        style={{ background: di%2===1 ? '#0b506a' : TD, borderColor:'#0a4d63', whiteSpace:'nowrap', fontSize:12 }}
+                        style={{ background: di%2===1 ? '#0b506a' : TD, borderColor:'#fff', whiteSpace:'nowrap', fontSize:12 }}
                       >
                         {mode === 'solicitar' ? (
                           <div className="flex items-center justify-between gap-2">
