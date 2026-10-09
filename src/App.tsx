@@ -831,6 +831,7 @@ export default function App() {
     setSelectedDays(prev => {
       const s = new Set(prev)
       s.has(key) ? s.delete(key) : s.add(key)
+      if (s.size === 0) s.add(ALL_DAYS[0].key)
       setAllDaysSelected(s.size === ALL_DAYS.length)
       return s
     })
@@ -838,8 +839,9 @@ export default function App() {
 
   function toggleAllDays() {
     if (allDaysSelected) {
+      // Sin días no hay nada para mostrar: queda seleccionado el primero
       setAllDaysSelected(false)
-      setSelectedDays(new Set())
+      setSelectedDays(new Set([ALL_DAYS[0].key]))
     } else {
       setAllDaysSelected(true)
       setSelectedDays(new Set(ALL_DAYS.map(d => d.key)))
