@@ -1145,10 +1145,23 @@ export default function App() {
                       <th
                         key={d.key}
                         colSpan={mode==='solicitar' ? 3 : 2}
-                        className="text-center font-bold text-white px-3 py-2.5 border-r"
+                        className={`font-bold text-white px-3 border-r ${mode === 'solicitar' ? 'text-left py-1.5' : 'text-center py-2.5'}`}
                         style={{ background: di%2===1 ? '#0b506a' : TD, borderColor:'#0a4d63', whiteSpace:'nowrap', fontSize:12 }}
                       >
-                        {d.label}
+                        {mode === 'solicitar' ? (
+                          <div className="flex items-center justify-between gap-2">
+                            <span>{d.label}</span>
+                            <button
+                              type="button"
+                              onClick={() => setProgModal({ dayKey: d.key })}
+                              disabled={solicitarTipo === 'contrato'}
+                              title={solicitarTipo === 'contrato' ? 'Elegí "Por cantidad" para agregar programas.' : 'Agregar programas'}
+                              aria-label="Agregar programas"
+                              className="flex items-center justify-center rounded-md text-xl font-bold leading-none disabled:cursor-not-allowed"
+                              style={{ width:24, height:24, color: solicitarTipo === 'contrato' ? 'rgba(255,255,255,0.35)' : '#fff', background: solicitarTipo === 'contrato' ? 'transparent' : 'rgba(255,255,255,0.18)' }}
+                            >+</button>
+                          </div>
+                        ) : d.label}
                       </th>
                     ))}
                   </tr>
@@ -1253,29 +1266,6 @@ export default function App() {
                       })}
                     </tr>
                   ))}
-
-                  {/* + add program row (solicitar only) */}
-                  {mode === 'solicitar' && (
-                    <tr key="add-prog-row">
-                      <td className="sticky-col" style={{ left:L0, background:BG, borderBottom:'2px solid #9ec4d6' }}></td>
-                      <td className="sticky-col" style={{ left:L1, background:BG, borderBottom:'2px solid #9ec4d6' }}></td>
-                      <td className="sticky-col" style={{ left:L2, background:BG, borderBottom:'2px solid #9ec4d6' }}></td>
-                      <td className="sticky-col" style={{ left:L3, background:BG, borderBottom:'2px solid #9ec4d6', boxShadow:'2px 0 4px rgba(0,0,0,0.08)' }}></td>
-                      {visibleDays.map((d, di) => (
-                        <Fragment key={d.key}>
-                          <td colSpan={3} className="py-1.5 px-3 border-r" style={{ background: colBg(di) ?? '#fff', borderColor:'#dde8ee', borderBottom:'2px solid #9ec4d6' }}>
-                            <button
-                              onClick={() => setProgModal({ dayKey: d.key })}
-                              disabled={solicitarTipo === 'contrato'}
-                              title={solicitarTipo === 'contrato' ? 'Elegí "Por cantidad" para agregar programas.' : undefined}
-                              className="text-xl font-bold leading-none disabled:cursor-not-allowed"
-                              style={{ color: solicitarTipo === 'contrato' ? '#b9cdd6' : T }}
-                            >+</button>
-                          </td>
-                        </Fragment>
-                      ))}
-                    </tr>
-                  )}
 
                   {/* Contract section header */}
                   <tr key="contract-header">
