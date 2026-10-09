@@ -759,8 +759,8 @@ export default function App() {
   const [alert, setAlert] = useState<AlertData | null>(null)
   const [mode, setMode]   = useState<Mode>('generar')
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-  const [selectedDays, setSelectedDays]       = useState<Set<string>>(new Set(['d1','d2','d3']))
-  const [allDaysSelected, setAllDaysSelected] = useState(false)
+  const [selectedDays, setSelectedDays]       = useState<Set<string>>(new Set(ALL_DAYS.map(d => d.key)))
+  const [allDaysSelected, setAllDaysSelected] = useState(true)
   const [pedidos,      setPedidos]      = useState<Record<string,Record<string,string>>>({})
   const [nominaciones, setNominaciones] = useState<Record<string,Record<string,string>>>({})
   const [programInputs, setProgramInputs] = useState<Record<string,Record<string,string>>>({})
@@ -828,10 +828,10 @@ export default function App() {
     : ALL_DAYS.filter(d => selectedDays.has(d.key))
 
   function toggleDay(key: string) {
-    setAllDaysSelected(false)
     setSelectedDays(prev => {
       const s = new Set(prev)
       s.has(key) ? s.delete(key) : s.add(key)
+      setAllDaysSelected(s.size === ALL_DAYS.length)
       return s
     })
   }
@@ -897,7 +897,7 @@ export default function App() {
     setSearched(false)
     setProducto(''); setPuerto(''); setCliente(''); setPrograma([])
     setPedidos({}); setNominaciones({}); setProgramInputs({}); setExtraProgs({})
-    setSelectedDays(new Set(['d1','d2','d3'])); setAllDaysSelected(false)
+    setSelectedDays(new Set(ALL_DAYS.map(d => d.key))); setAllDaysSelected(true)
     setMode('generar')
   }
 
