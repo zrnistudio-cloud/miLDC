@@ -1382,7 +1382,7 @@ export default function App() {
                     <td className="sticky-col px-3 py-2.5 font-bold text-right border-r text-gray-900" style={{ left:L2, background:TL, borderColor:'#b8d8e8' }}>{CONTRACTS.reduce((s,c)=>s+pcOf(c),0)}</td>
                     <td className="sticky-col px-3 py-2.5 border-r" style={{ left:L3, background:TL, borderColor:'#b8d8e8', boxShadow:'2px 0 4px rgba(0,0,0,0.08)' }}></td>
                     {visibleDays.map((d, di) => {
-                      const totBg = colBg(di) ?? TL
+                      const totBg = TL
                       return mode === 'solicitar' ? (
                         <Fragment key={d.key}>
                           <td className="px-3 py-2.5 text-center font-bold border-r" style={{ background:totBg, borderColor:'#b8d8e8' }}>{CONTRACTS.reduce((s,c)=>s+getGen(c, d.key),0)}</td>
